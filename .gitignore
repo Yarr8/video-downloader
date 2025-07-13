@@ -1,0 +1,21 @@
+# Java
+target/
+*.class
+*.jar
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# System
+.DS_Store
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Env files
+*.env
+application-local.yml
