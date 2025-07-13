@@ -1,0 +1,6 @@
+server:
+  port: 8082
+
+downloader:
+  urls:
+    reddit: http://localhost:8081/download
