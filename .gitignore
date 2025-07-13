@@ -19,3 +19,6 @@ venv/
 # Env files
 *.env
 application-local.yml
+
+# downloader-reddit
+downloader-reddit/tmp/
