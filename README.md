@@ -34,7 +34,8 @@ Edit the file and provide your database credentials and configuration.
 ##### 2. Run the service
 
 ```bash
-./video-storage/run.sh
+ cd .\video-storage\
+.\run.sh
 ```
 
 This script will automatically load environment variables and run the service via Maven.
