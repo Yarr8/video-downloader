@@ -1,6 +1,8 @@
 package com.video_downloader.video_storage.controller;
 
 import com.video_downloader.video_storage.dto.VideoDownloadRequest;
+import com.video_downloader.video_storage.model.Video;
+import com.video_downloader.video_storage.repository.VideoRepository;
 import com.video_downloader.video_storage.config.DownloaderProperties;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,17 +13,34 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/videos")
 @RequiredArgsConstructor
 public class VideoStorageController {
 
+    private final VideoRepository videoRepository;
     private final DownloaderProperties downloaderProperties;
     private final WebClient webClient;
 
     @GetMapping
     public void downloadVideo(@RequestParam String url, HttpServletResponse response) throws IOException {
+        System.out.println("Controller repository:\t" + videoRepository.hashCode());
+        System.out.println("Searching for url: " + url);
+        Optional<Video> existing = videoRepository.findByUrl(url);
+        if (existing.isPresent()) {
+            Path videoPath = Path.of(existing.get().getPath());
+            if (Files.exists(videoPath)) {
+                System.out.println("Path found: " + existing.get().getPath());
+                serveFile(videoPath, response);
+                return;
+            }
+        }
+
+        System.out.println("File not found locally. Requesting downloader.");
+        String id = UUID.randomUUID().toString();
         String platform = extractPlatform(url);
         String downloaderUrl = downloaderProperties.getUrls().get(platform);
 
@@ -46,6 +65,16 @@ public class VideoStorageController {
         Path outputPath = Paths.get("videos", filename);
         Files.createDirectories(outputPath.getParent());
         Files.write(outputPath, videoBytes);
+
+        // Save new video info
+        Video video = Video.builder()
+                .id(id)
+                .url(url)
+                .filename(filename)
+                .path(outputPath.toAbsolutePath().toString())
+                .build();
+
+        videoRepository.save(video);
 
         serveFile(outputPath, response);
     }
