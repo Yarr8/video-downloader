@@ -22,12 +22,11 @@ Coming soon: docker-compose.yml setup.
 
 This section describes how to run the `api-gateway` service locally using Maven.
 ```bash
- cd .\video-storage\
+ cd .\api-gateway\
 .\run.sh
 ```
 This script run the Spring Boot application via Maven.
 No environment variables are required for this service.
-
 
 #### video-storage service
 
