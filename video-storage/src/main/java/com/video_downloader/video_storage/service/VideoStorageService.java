@@ -6,6 +6,7 @@ import com.video_downloader.video_storage.repository.VideoRepository;
 import com.video_downloader.video_storage.config.DownloaderProperties;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
@@ -17,6 +18,7 @@ import java.nio.file.*;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VideoStorageService {
@@ -24,22 +26,22 @@ public class VideoStorageService {
     private final DownloaderProperties downloaderProperties;
     private final WebClient webClient;
 
-    public void downloadVideo(String url, HttpServletResponse response) throws IOException {
+    public void downloadVideo(String url, String traceId, HttpServletResponse response) throws IOException {
         Optional<Video> existing = videoRepository.findByUrl(url);
         if (existing.isPresent()) {
             Path videoPath = Path.of(existing.get().getPath());
             if (Files.exists(videoPath)) {
-                System.out.printf("Serving video from local storage. url=%s, path=%s\n", url, videoPath);
+                log.info("Serving video from local storage. url={}, path={}, traceId={}", url, videoPath, traceId);
                 serveFile(videoPath, response);
                 return;
             }
         }
-        System.out.println("File not found locally. Requesting downloader. url=" + url);
+        log.info("File not found locally. Requesting downloader. url={}, traceId={}", url, traceId);
         String id = UUID.randomUUID().toString();
         String platform = extractPlatform(url);
         String downloaderUrl = downloaderProperties.getUrls().get(platform);
         if (downloaderUrl == null) {
-            System.out.println("Unsupported platform. url=" + url);
+            log.warn("Unsupported platform. url={}, traceId={}", url, traceId);
             response.sendError(HttpStatus.BAD_REQUEST.value(), "Unsupported platform: " + platform);
             return;
         }
@@ -52,7 +54,7 @@ public class VideoStorageService {
                     .toEntity(byte[].class)
                     .block();
             if (responseEntity == null || responseEntity.getBody() == null) {
-                System.out.println("Null response from downloader. url=" + url);
+                log.error("Null response from downloader. url={}, traceId={}", url, traceId);
                 response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Downloader returned no data");
                 return;
             }
@@ -69,14 +71,13 @@ public class VideoStorageService {
                     .path(outputPath.toAbsolutePath().toString())
                     .build();
             videoRepository.save(video);
-            System.out.printf("Saved new video. url=%s, filename=%s\n", url, filename);
+            log.info("Saved new video. url={}, filename={}, traceId={}", url, filename, traceId);
             serveFile(outputPath, response);
         } catch (WebClientResponseException e) {
-            System.out.printf("Downloader error. url=%s, status=%s, body=%s\n", url, e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Downloader error. url={}, traceId={}, status={}, body={}", url, traceId, e.getStatusCode(), e.getResponseBodyAsString());
             response.sendError(e.getStatusCode().value(), e.getResponseBodyAsString());
         } catch (Exception e) {
-            System.out.println("Unexpected error. url=" + url);
-            System.out.println(e);
+            log.error("Unexpected error. url={}, traceId={}", url, traceId, e);
             response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error");
         }
     }
