@@ -18,6 +18,17 @@ Coming soon: docker-compose.yml setup.
 
 ### Running services manually
 
+#### api-gateway service
+
+This section describes how to run the `api-gateway` service locally using Maven.
+```bash
+ cd .\video-storage\
+.\run.sh
+```
+This script run the Spring Boot application via Maven.
+No environment variables are required for this service.
+
+
 #### video-storage service
 
 This section describes how to run the `video-storage` service locally using Maven and environment variables.
