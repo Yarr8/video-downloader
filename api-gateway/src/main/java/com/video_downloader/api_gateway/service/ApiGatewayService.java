@@ -1,17 +1,19 @@
 package com.video_downloader.api_gateway.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApiGatewayService {
     private final WebClient videoStorageClient;
 
-    public ResponseEntity<byte[]> getVideo(String url) {
+    public ResponseEntity<byte[]> getVideo(String url, String traceId) {
         try {
             ResponseEntity<byte[]> responseEntity = videoStorageClient.get()
                 .uri(uriBuilder -> uriBuilder.queryParam("url", url).build())
@@ -19,7 +21,7 @@ public class ApiGatewayService {
                 .toEntity(byte[].class)
                 .block();
             if (responseEntity == null || responseEntity.getBody() == null) {
-                System.out.println("Null response from video-storage. url=" + url);
+                log.error("Null response from video-storage. url={}, traceId={}", url, traceId);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
             HttpHeaders headers = new HttpHeaders();
@@ -28,14 +30,13 @@ public class ApiGatewayService {
             if (contentDisposition != null) {
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
             }
-            System.out.println("Successfully proxied video. url=" + url);
+            log.info("Successfully proxied video. url={}, traceId={}", url, traceId);
             return new ResponseEntity<>(responseEntity.getBody(), headers, responseEntity.getStatusCode());
         } catch (WebClientResponseException e) {
-            System.out.printf("Error from video-storage. url=%s, status=%s, body=%s\n", url, e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Error from video-storage. url={}, traceId={}, status={}, body={}", url, traceId, e.getStatusCode(), e.getResponseBodyAsString());
             return ResponseEntity.status(e.getStatusCode()).build();
         } catch (Exception e) {
-            System.out.println("Unexpected error proxying video. url=" + url);
-            System.out.println(e);
+            log.error("Unexpected error proxying video. url={}, traceId={}", url, traceId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
