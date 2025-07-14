@@ -1,4 +1,6 @@
-from flask import Flask, request, send_file, abort, Response
+from flask import Flask, request, send_file
+from dotenv import load_dotenv
+from waitress import serve
 import os
 import threading
 
@@ -54,5 +56,12 @@ def delete_file_later(path, delay=10):
 
 
 # downloader.download('https://www.reddit.com/r/Unexpected/comments/1lk28mq/who_are_we_hiding_from/', 'who_are_we_hiding_from', True)
+
+load_dotenv()
+
+port = int(os.getenv("PORT", 8081))
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8081)
+    print('Starting on port: ' + str(port))
+    serve(app, host="0.0.0.0", port=port)
+    # app.run(host="0.0.0.0", port=port)

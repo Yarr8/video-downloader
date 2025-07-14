@@ -50,6 +50,40 @@ Edit the file and provide your database credentials and configuration.
 
 This script will automatically load environment variables and run the service via Maven.
 
+#### downloader-reddit service
+
+This section describes how to run the `downloader-reddit` service locally using Python.
+
+##### 1. Create .env file
+Copy the example file and edit values if needed:
+
+```bash
+cp .env.example .env
+```
+Example .env content:
+
+```
+PORT=5001
+LOG_LEVEL=info
+```
+
+##### 2. Run the service
+# On Linux/macOS
+```bash
+ cd .\downloader-reddit\
+.\run.sh
+```
+
+# On Windows
+```bash
+ cd .\downloader-reddit\
+.\run.bat
+```
+
+These scripts will:
+- Create and activate the virtual environment (if missing)
+- Install dependencies
+- Run main.py
 
 ## Request Example
 
