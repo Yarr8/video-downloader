@@ -68,13 +68,13 @@ LOG_LEVEL=info
 ```
 
 ##### 2. Run the service
-# On Linux/macOS
+On Linux/macOS
 ```bash
  cd .\downloader-reddit\
 .\run.sh
 ```
 
-# On Windows
+On Windows
 ```bash
  cd .\downloader-reddit\
 .\run.bat
