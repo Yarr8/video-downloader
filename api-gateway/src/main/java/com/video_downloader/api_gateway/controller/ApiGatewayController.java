@@ -1,40 +1,29 @@
 package com.video_downloader.api_gateway.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
+import com.video_downloader.api_gateway.service.ApiGatewayService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/videos")
 @RequiredArgsConstructor
 public class ApiGatewayController {
 
-    private final WebClient videoStorageClient;
+    private final ApiGatewayService apiGatewayService;
 
     @GetMapping
-    public ResponseEntity<byte[]> getVideo(@RequestParam String url) {
-        System.out.println("Downloading: " + url);
-        ResponseEntity<byte[]> responseEntity = videoStorageClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .queryParam("url", url)
-                .build())
-            .retrieve()
-            .toEntity(byte[].class)
-            .block();
-
-        if (responseEntity == null || responseEntity.getBody() == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<byte[]> getVideo(@RequestParam String url, @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
+        String traceId = requestId != null ? requestId : java.util.UUID.randomUUID().toString();
+        MDC.put("traceId", traceId);
+        try {
+            log.info("Received video download request. url={}, traceId={}", url, traceId);
+            return apiGatewayService.getVideo(url, traceId);
+        } finally {
+            MDC.clear();
         }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-
-        String contentDisposition = responseEntity.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION);
-        if (contentDisposition != null) {
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
-        }
-
-        return new ResponseEntity<>(responseEntity.getBody(), headers, responseEntity.getStatusCode());
     }
 }
