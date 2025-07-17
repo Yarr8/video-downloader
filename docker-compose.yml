@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - video-net
+
+  video-storage:
+    build: ./video-storage
+    container_name: video-storage
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${VIDEO_STORAGE_PORT}:${VIDEO_STORAGE_PORT}"
+    depends_on:
+      - postgres
+      - downloader-reddit
+    volumes:
+      - video_storage_data:/app/videos
+    networks:
+      - video-net
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+    depends_on:
+      - video-storage
+    networks:
+      - video-net
+
+  downloader-reddit:
+    build: ./downloader-reddit
+    container_name: downloader-reddit
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${DOWNLOADER_REDDIT_PORT}:${DOWNLOADER_REDDIT_PORT}"
+    networks:
+      - video-net
+
+volumes:
+  pgdata:
+  video_storage_data:
+
+networks:
+  video-net:
+    driver: bridge 

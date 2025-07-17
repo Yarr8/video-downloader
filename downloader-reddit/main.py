@@ -57,9 +57,9 @@ def delete_file_later(path, delay=10):
 
 # downloader.download('https://www.reddit.com/r/Unexpected/comments/1lk28mq/who_are_we_hiding_from/', 'who_are_we_hiding_from', True)
 
-load_dotenv()
+load_dotenv('./../.env')
 
-port = int(os.getenv("PORT", 8081))
+port = int(os.getenv("DOWNLOADER_REDDIT_PORT", 8081))
 
 if __name__ == "__main__":
     print('Starting on port: ' + str(port))

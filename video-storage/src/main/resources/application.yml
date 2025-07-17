@@ -1,13 +1,13 @@
 server:
-  port: 8082
+  port: ${VIDEO_STORAGE_PORT:8082}
 
 downloader:
   urls:
-    reddit: http://localhost:8081/download
+    reddit: http://${DOWNLOADER_REDDIT_HOST:localhost}:${DOWNLOADER_REDDIT_PORT:8081}/download
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:video_storage}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
