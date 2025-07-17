@@ -11,79 +11,72 @@ Service for downloading videos from different platforms (Reddit only supported f
 - WebClient / REST
 - Microservice architecture
 
-## How to run
+## How to Run
 
-### Run with Docker
-Coming soon: docker-compose.yml setup.
+###  Preparation
 
-### Running services manually
-
-#### api-gateway service
-
-This section describes how to run the `api-gateway` service locally using Maven.
-```bash
- cd .\api-gateway\
-.\run.sh
-```
-This script run the Spring Boot application via Maven.
-No environment variables are required for this service.
-
-#### video-storage service
-
-This section describes how to run the `video-storage` service locally using Maven and environment variables.
-
-##### 1. Create `.env` file
-
-Create a `.env` file in `video-storage/` directory, using `.env.example` as a template:
-
-```bash
-cp video-storage/.env.example video-storage/.env
-```
-Edit the file and provide your database credentials and configuration.
-
-##### 2. Run the service
-
-```bash
- cd .\video-storage\
-.\run.sh
-```
-
-This script will automatically load environment variables and run the service via Maven.
-
-#### downloader-reddit service
-
-This section describes how to run the `downloader-reddit` service locally using Python.
-
-##### 1. Create .env file
-Copy the example file and edit values if needed:
+1. Create a `.env` file in the project root using `.env.example` as a template:
 
 ```bash
 cp .env.example .env
 ```
-Example .env content:
 
-```
-PORT=5001
-LOG_LEVEL=info
-```
+2. Edit the file and provide your database credentials and service configuration.
 
-##### 2. Run the service
-On Linux/macOS
+---
+
+###  Run with Docker Compose
+
 ```bash
- cd .\downloader-reddit\
-.\run.sh
+docker compose up --build
 ```
 
-On Windows
+This will start all services: `postgres`, `api-gateway`, `video-storage`, and `downloader-reddit`.
+
+---
+
+###  Run Services Manually (alternative)
+
+#### api-gateway
+
 ```bash
- cd .\downloader-reddit\
-.\run.bat
+cd api-gateway
+./run.sh
 ```
 
-These scripts will:
+This script runs the Spring Boot application via Maven. No environment variables are required.
+
+---
+
+#### video-storage
+
+```bash
+cd video-storage
+./run.sh
+```
+
+This script loads environment variables from the shared `.env` file in the project root and runs the service using Maven.
+
+---
+
+#### downloader-reddit
+
+```bash
+cd downloader-reddit
+# On Linux/macOS
+./run.sh
+
+# On Windows
+run.bat
+```
+
+These scripts:
 - Create and activate the virtual environment (if missing)
 - Install dependencies
-- Run main.py
+- Run `main.py`
+- Load environment variables from the shared root `.env` file
+
+---
 
 ## Request Example
 
